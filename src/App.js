@@ -128,7 +128,14 @@ class App extends Component {
   };
 
   render() {
-    const { isSignedIn, imageUrl, route, boxes, isProfileOpen } = this.state;
+    const {
+      isSignedIn,
+      imageUrl,
+      route,
+      boxes,
+      isProfileOpen,
+      user
+    } = this.state;
     console.log({ isProfileOpen });
     return (
       <div className="App">
@@ -140,7 +147,11 @@ class App extends Component {
         />
         {isProfileOpen && (
           <Modal>
-            <Profile {...{ isProfileOpen }} toggleModal={this.toggleModal}>
+            <Profile
+              {...{ isProfileOpen, user }}
+              loadUser={this.loadUser}
+              toggleModal={this.toggleModal}
+            >
               hello
             </Profile>
           </Modal>

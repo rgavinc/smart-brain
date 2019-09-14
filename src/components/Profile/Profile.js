@@ -1,7 +1,40 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Profile.css";
 
-const Profile = ({ isProfileOpen, toggleModal }) => {
+const Profile = ({ isProfileOpen, toggleModal, loadUser, user = {} }) => {
+  const dateJoined = new Date(user.joined);
+  const [name, setName] = useState(user.name);
+  const [age, setAge] = useState(user.age);
+  const [pet, setPet] = useState(user.pet);
+  const onFormChange = e => {
+    switch (e.target.name) {
+      case "user-name":
+        setName(e.target.value);
+        break;
+      case "user-age":
+        setAge(e.target.value);
+        break;
+      case "user-pet":
+        setPet(e.target.value);
+        break;
+      default:
+        return;
+    }
+  };
+
+  const onProfileUpdate = data => {
+    fetch(`http://localhost:3000/profile/${user.id}`, {
+      method: "post",
+      header: { "Content-Type": "application/json" },
+      body: JSON.stringify({ formData: data })
+    })
+      .then(resp => {
+        toggleModal();
+        loadUser({ ...user, ...data });
+      })
+      .catch(e => console.log("error", e));
+  };
+
   return (
     <div className="profile-modal">
       <article className="br3 ba b--black-10 mv4 w-100 w-50-m w-25-l mw6 shadow-5 center bg-white">
@@ -11,9 +44,12 @@ const Profile = ({ isProfileOpen, toggleModal }) => {
             className="h3 w3 dib"
             alt="avatar"
           />
-          <h1>John Doe</h1>
-          <h4>Image Submitted: 5</h4>
-          <p>Member since January</p>
+          <h1>{name || " "}</h1>
+          <h4>Images Submitted: {user.entries}</h4>
+          <p>
+            Member since
+            {` ${dateJoined.getMonth()}/${dateJoined.getDate()}/${dateJoined.getFullYear()}`}
+          </p>
           <hr />
           <div className="mt3">
             <label className="mt2 fw6" htmlFor="user-name">
@@ -21,39 +57,42 @@ const Profile = ({ isProfileOpen, toggleModal }) => {
             </label>
             <input
               className="pa2 ba w-100"
-              placeholder="John"
+              value={name}
               type="text"
               name="user-name"
               id="name"
-              onChange={this.onNameChange}
+              onChange={onFormChange}
             />
             <label className="mt2 fw6" htmlFor="user-age">
               Age:
             </label>
             <input
               className="pa2 ba w-100"
-              placeholder="56"
+              value={age}
               type="text"
               name="age-name"
               id="age"
-              onChange={this.onNameChange}
+              onChange={onFormChange}
             />
             <label className="mt2 fw6" htmlFor="pet-name">
               Pet:
             </label>
             <input
               className="pa2 ba w-100"
-              placeholder="Dragon"
+              value={pet}
               type="text"
               name="pet-name"
               id="pet"
-              onChange={this.onNameChange}
+              onChange={onFormChange}
             />
             <div
               className="mt4"
               style={{ display: "flex", justifyContent: "space-evenly" }}
             >
-              <button className="b pa2 grow pointer hover-white w-40 bg-light-blue b--black-20">
+              <button
+                onClick={() => onProfileUpdate({ name, age, pet })}
+                className="b pa2 grow pointer hover-white w-40 bg-light-blue b--black-20"
+              >
                 Save
               </button>
               <button
