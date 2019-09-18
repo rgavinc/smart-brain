@@ -9,6 +9,7 @@ import ImageLinkForm from "./components/ImageLinkForm/ImageLinkForm";
 import Rank from "./components/Rank/Rank";
 import Modal from "./components/Modal/Modal";
 import Profile from "./components/Profile/Profile";
+import Loader from "react-loader-spinner";
 import "./App.css";
 
 const particlesOptions = {
@@ -27,7 +28,7 @@ const initialState = {
   input: "",
   imageUrl: "",
   box: {},
-  route: "signin",
+  route: "loading",
   isSignedIn: false,
   isProfileOpen: false,
   user: {
@@ -38,6 +39,12 @@ const initialState = {
     joined: ""
   }
 };
+
+// TODO: add pet and age functionality
+// TODO: delete token after signout
+// TODO: add roouting
+// TODO: add auth to reegister
+// TODO: clean up code
 
 class App extends Component {
   constructor() {
@@ -75,6 +82,8 @@ class App extends Component {
           }
         })
         .catch(err => console.log("something bad happened", err));
+    } else {
+      this.onRouteChange("signin");
     }
   }
 
@@ -91,23 +100,25 @@ class App extends Component {
   };
 
   calculateFaceLocation = data => {
-    console.log({ data });
-    const clarifaiFace =
-      data.outputs[0].data.regions[0].region_info.bounding_box;
-    const regions = data.outputs[0].data.regions;
-    const image = document.getElementById("inputimage");
-    const width = Number(image.width);
-    const height = Number(image.height);
-    return regions.map(({ region_info: { bounding_box } }) => ({
-      left: bounding_box.left_col * width,
-      top: bounding_box.top_row * height,
-      right: width - bounding_box.right_col * width,
-      bottom: height - bounding_box.bottom_row * height
-    }));
+    if (data && data.outputs) {
+      const clarifaiFace =
+        data.outputs[0].data.regions[0].region_info.bounding_box;
+      const regions = data.outputs[0].data.regions;
+      const image = document.getElementById("inputimage");
+      const width = Number(image.width);
+      const height = Number(image.height);
+      return regions.map(({ region_info: { bounding_box } }) => ({
+        left: bounding_box.left_col * width,
+        top: bounding_box.top_row * height,
+        right: width - bounding_box.right_col * width,
+        bottom: height - bounding_box.bottom_row * height
+      }));
+    }
+    return;
   };
 
   displayFaceBoxes = boxes => {
-    this.setState({ boxes });
+    if (boxes) this.setState({ boxes });
   };
 
   onInputChange = event => {
@@ -118,7 +129,10 @@ class App extends Component {
     this.setState({ imageUrl: this.state.input });
     fetch("http://localhost:3000/imageurl", {
       method: "post",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: window.sessionStorage.getItem("token")
+      },
       body: JSON.stringify({
         input: this.state.input
       })
@@ -128,7 +142,10 @@ class App extends Component {
         if (response) {
           fetch("http://localhost:3000/image", {
             method: "put",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: window.sessionStorage.getItem("token")
+            },
             body: JSON.stringify({
               id: this.state.user.id
             })
@@ -189,7 +206,7 @@ class App extends Component {
             </Profile>
           </Modal>
         )}
-        {route === "home" ? (
+        {route === "home" && (
           <div>
             <Logo />
             <Rank
@@ -202,12 +219,23 @@ class App extends Component {
             />
             <FaceRecognition boxes={boxes} imageUrl={imageUrl} />
           </div>
-        ) : route === "signin" ? (
+        )}
+        {route === "signin" && (
           <Signin loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
-        ) : (
+        )}
+        {route === "register" && (
           <Register
             loadUser={this.loadUser}
             onRouteChange={this.onRouteChange}
+          />
+        )}
+        {route === "loading" && (
+          <Loader
+            type="Puff"
+            color="#00BFFF"
+            height={100}
+            width={100}
+            timeout={3000} //3 secs
           />
         )}
       </div>
