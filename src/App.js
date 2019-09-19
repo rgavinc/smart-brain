@@ -34,6 +34,8 @@ const initialState = {
   user: {
     id: "",
     name: "",
+    pet: "",
+    age: "",
     email: "",
     entries: 0,
     joined: ""
@@ -56,6 +58,7 @@ class App extends Component {
     console.log("in compoonent did moount");
     const token = window.sessionStorage.getItem("token");
     if (token) {
+      console.log("I have a token");
       fetch("http://localhost:3000/signin", {
         method: "post",
         headers: {
@@ -78,10 +81,20 @@ class App extends Component {
                   this.loadUser(user);
                   this.onRouteChange("home");
                 }
+              })
+              .catch(err => {
+                console.log("bad");
+                throw Error("fail");
               });
+          } else {
+            console.log();
+            throw Error("no data");
           }
         })
-        .catch(err => console.log("something bad happened", err));
+        .catch(err => {
+          console.log("something bad happened", err);
+          this.onRouteChange("signin");
+        });
     } else {
       this.onRouteChange("signin");
     }
@@ -89,13 +102,7 @@ class App extends Component {
 
   loadUser = data => {
     this.setState({
-      user: {
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        entries: data.entries,
-        joined: data.joined
-      }
+      user: data
     });
   };
 
@@ -191,7 +198,7 @@ class App extends Component {
       <div className="App">
         <Particles className="particles" params={particlesOptions} />
         <Navigation
-          isSignedIn={isSignedIn}
+          {...{ isSignedIn, user }}
           onRouteChange={this.onRouteChange}
           toggleModal={this.toggleModal}
         />

@@ -75,7 +75,7 @@ const Profile = ({ isProfileOpen, toggleModal, loadUser, user = {} }) => {
               className="pa2 ba w-100"
               value={age}
               type="text"
-              name="age-name"
+              name="user-age"
               id="age"
               onChange={onFormChange}
             />
@@ -86,7 +86,7 @@ const Profile = ({ isProfileOpen, toggleModal, loadUser, user = {} }) => {
               className="pa2 ba w-100"
               value={pet}
               type="text"
-              name="pet-name"
+              name="user-pet"
               id="pet"
               onChange={onFormChange}
             />

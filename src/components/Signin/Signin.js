@@ -1,6 +1,6 @@
 import React from "react";
 import style from "./Signin.css";
-
+import { signin } from "../../utils/app-functions";
 class Signin extends React.Component {
   constructor(props) {
     super(props);
@@ -18,41 +18,15 @@ class Signin extends React.Component {
     this.setState({ signInPassword: event.target.value });
   };
 
-  saveAuthTokenInSession = token => {
-    window.sessionStorage.setItem("token", token);
+  onUserRetrevial = user => {
+    this.props.loadUser(user);
+    this.props.onRouteChange("home");
   };
 
   onSubmitSignIn = e => {
     e.preventDefault();
-    fetch("http://localhost:3000/signin", {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: this.state.signInEmail,
-        password: this.state.signInPassword
-      })
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.userId && data.success === "true") {
-          this.saveAuthTokenInSession(data.token);
-          //TODO: make this into a function since it is being useed in App.js also
-          fetch(`http://localhost:3000/profile/${data.userId}`, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: data.token
-            }
-          })
-            .then(resp => resp.json())
-            .then(user => {
-              if (user && user.email) {
-                this.props.loadUser(user);
-                this.props.onRouteChange("home");
-              }
-            });
-        }
-      })
-      .catch(console.log);
+    const { signInEmail, signInPassword } = this.state;
+    signin(signInEmail, signInPassword, this.onUserRetrevial);
   };
 
   render() {

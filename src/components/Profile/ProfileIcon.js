@@ -6,9 +6,25 @@ import {
   DropdownItem
 } from "reactstrap";
 
-const ProfileIcon = ({ onRouteChange, toggleModal }) => {
-  console.log(toggleModal);
+const ProfileIcon = ({ onRouteChange, toggleModal, user }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const handleSignout = () => {
+    //localhost:3000/signin
+    fetch("http://localhost:3000/signout/", {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: window.sessionStorage.getItem("token")
+      }
+    })
+      .then(() => {
+        console.log("in here");
+        window.sessionStorage.removeItem("token");
+        onRouteChange("signin");
+      })
+      .catch(err => console.log);
+  };
 
   return (
     <div className="pa4 tc">
@@ -34,9 +50,7 @@ const ProfileIcon = ({ onRouteChange, toggleModal }) => {
           style={{ backgroundColor: "rgba(255,255,255,0.5" }}
         >
           <DropdownItem onClick={toggleModal}>View Profile</DropdownItem>
-          <DropdownItem onClick={() => onRouteChange("signout")}>
-            Sign Out
-          </DropdownItem>
+          <DropdownItem onClick={handleSignout}>Sign Out</DropdownItem>
         </DropdownMenu>
       </Dropdown>
     </div>
